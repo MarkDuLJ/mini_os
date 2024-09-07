@@ -1,3 +1,5 @@
+use core::fmt;
+
 use volatile::Volatile;
 
 #[allow(dead_code)]
@@ -80,11 +82,37 @@ impl Writer {
     }
 
     fn new_line(&mut self){
+        for row in 1..BUFFER_HIGH {
+            for col in 0..BUFFER_WIDTH {
+                let character = self.buffer.chars[row][col].read();
+                self.buffer.chars[row-1][col].write(character);
+            }
+        }
+        self.clear_row(BUFFER_HIGH - 1);
+        self.column_postion = 0;
+    }
 
+    fn clear_row(&mut self, row: usize) {
+        let blank = ScreenChar{
+            ascii_char: b' ',
+            color_code: self.color_code,
+        };
+
+        for col in 0..BUFFER_WIDTH {
+            self.buffer.chars[row][col].write(blank);
+        }
     }
 }
 
+impl fmt::Write for Writer {
+    fn write_str(&mut self, s: &str) -> fmt::Result {
+        self.write_str(s);
+        Ok(())
+    } 
+}
+
 pub fn print_to_screen() {
+    use core::fmt::Write;
     let mut writer = Writer{
         column_postion: 0,
         color_code: ColorCode::new(Color::Cyan, Color::DarkGray),
@@ -96,5 +124,6 @@ pub fn print_to_screen() {
     writer.write_byte(b'H');
     writer.write_string("ello");
     writer.write_string("W@rld");
+    write!(writer, "the {} + {} = {}", 3, 5, 8);
 }
 
