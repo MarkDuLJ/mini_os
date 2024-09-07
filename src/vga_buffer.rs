@@ -1,3 +1,5 @@
+use volatile::Volatile;
+
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
@@ -36,7 +38,7 @@ const BUFFER_WIDTH: usize = 80;
 
 #[repr(transparent)]
 struct Buffer {
-    chars: [[ScreenChar; BUFFER_WIDTH]; BUFFER_HIGH],
+    chars: [[Volatile<ScreenChar>; BUFFER_WIDTH]; BUFFER_HIGH],
 }
 
 pub struct Writer {
@@ -67,10 +69,10 @@ impl Writer {
                 let col = self.column_postion;
 
                 let color_code = self.color_code;
-                self.buffer.chars[row][col] = ScreenChar {
+                self.buffer.chars[row][col].write( ScreenChar {
                     ascii_char: byte,
                     color_code,
-                };
+                });
 
                 self.column_postion += 1;
             }
