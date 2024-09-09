@@ -1,5 +1,7 @@
 use core::fmt;
 
+use lazy_static::lazy_static;
+use spin::Mutex;
 use volatile::Volatile;
 
 #[allow(dead_code)]
@@ -47,6 +49,16 @@ pub struct Writer {
     column_postion: usize,
     color_code: ColorCode,
     buffer: &'static mut Buffer,
+}
+
+lazy_static!{
+    pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer {
+        column_postion: 0,
+        color_code: ColorCode::new(Color::Cyan, Color::Red),
+        buffer: unsafe {
+            &mut *(0xb8000 as *mut Buffer)
+        },
+    });
 }
 
 impl Writer {
@@ -110,6 +122,8 @@ impl fmt::Write for Writer {
         Ok(())
     } 
 }
+
+
 
 pub fn print_to_screen() {
     use core::fmt::Write;
