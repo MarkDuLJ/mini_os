@@ -8,13 +8,27 @@
 
 
 mod vga_buffer;
+mod serial;
 
 use core::panic::PanicInfo;
 
+#[cfg(not(test))]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     println!("{}", info);
     loop{}
+}
+
+// panic handler in test mode
+#[panic_handler]
+#[cfg(test)]
+fn panic(info:&PanicInfo) -> ! {
+    serial_println!("[Failed]\n");
+    serial_println!("Erro info: {}\n", info);
+    exit_qemu(QemuExitCode::Failed);
+    loop {
+        
+    }
 }
 
 
@@ -44,6 +58,7 @@ test_main();
 
 #[cfg(test)]
 pub fn test_runner(tests: &[&dyn Fn()]) {
+    serial_println!("Running {} tests",tests.len());
     println!("Running {} tests...", tests.len());
     for test in tests {
         test();
@@ -55,8 +70,9 @@ pub fn test_runner(tests: &[&dyn Fn()]) {
 
 #[test_case]
 fn demo_assertion() {
+    serial_print!("demo assertion using serial print marco");
     print!("an assertion demo...");
-    assert_eq!(1,1);
+    assert_eq!(1,2);
     println!("[OK]");
 }
 
