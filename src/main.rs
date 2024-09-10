@@ -57,11 +57,11 @@ test_main();
 }
 
 #[cfg(test)]
-pub fn test_runner(tests: &[&dyn Fn()]) {
+pub fn test_runner(tests: &[&dyn Testable]) {
     serial_println!("Running {} tests",tests.len());
     println!("Running {} tests...", tests.len());
     for test in tests {
-        test();
+        test.run();
     }
 
     println!("quiting system");
@@ -72,7 +72,8 @@ pub fn test_runner(tests: &[&dyn Fn()]) {
 fn demo_assertion() {
     serial_print!("demo assertion using serial print marco");
     print!("an assertion demo...");
-    assert_eq!(1,2);
+    assert_eq!(1,1);
+    // assert_eq!(1,2);
     println!("[OK]");
 }
 
@@ -88,5 +89,21 @@ pub fn exit_qemu(exit_code: QemuExitCode) {
     unsafe {
         let mut port = Port::new(0xf4);
         port.write(exit_code as u32);
+    }
+}
+
+pub trait Testable {
+    fn run(&self) -> ();
+}
+
+// print general info to every test function
+impl <T> Testable for T 
+where T: Fn(),
+{
+    fn run(&self) 
+     {
+        serial_print!("{}...\t", core::any::type_name::<T>());
+        self();
+        serial_println!("[OK]");
     }
 }
