@@ -12,6 +12,8 @@ mod serial;
 
 use core::panic::PanicInfo;
 
+use vga_buffer::WRITER;
+
 #[cfg(not(test))]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
@@ -68,14 +70,6 @@ pub fn test_runner(tests: &[&dyn Testable]) {
     exit_qemu(QemuExitCode::Success);
 }
 
-#[test_case]
-fn demo_assertion() {
-    serial_print!("demo assertion using serial print marco");
-    print!("an assertion demo...");
-    assert_eq!(1,1);
-    // assert_eq!(1,2);
-    println!("[OK]");
-}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u32)]
@@ -106,4 +100,22 @@ where T: Fn(),
         self();
         serial_println!("[OK]");
     }
+}
+
+#[test_case]
+fn demo_assertion() {
+    serial_print!("demo assertion using serial print marco");
+    print!("an assertion demo...");
+    assert_eq!(1,1);
+    // assert_eq!(1,2);
+    println!("[OK]");
+}
+
+#[test_case]
+fn test_println_simple() {
+    serial_print!("demo assertion using serial print marco");
+    println!("an assertion demo...");
+    assert_eq!(1,1);
+ 
+    println!("[OK]");
 }

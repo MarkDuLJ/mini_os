@@ -42,7 +42,7 @@ const BUFFER_WIDTH: usize = 80;
 
 #[repr(transparent)]
 struct Buffer {
-    chars: [[Volatile<ScreenChar>; BUFFER_WIDTH]; BUFFER_HIGH],
+    pub chars: [[Volatile<ScreenChar>; BUFFER_WIDTH]; BUFFER_HIGH],
 }
 
 pub struct Writer {
@@ -156,3 +156,15 @@ pub fn print_to_screen() {
     write!(writer, "the {} + {} = {}", 3, 5, 8);
 }
  */
+
+
+
+#[test_case]
+fn test_println_output() {
+    let s = "test string fits on a single line";
+    println!("{}",s);
+    for (i,c) in s.chars().enumerate() {
+        let screen_char = WRITER.lock().buffer.chars[BUFFER_HIGH-2][i].read();
+        assert_eq!(char::from(screen_char.ascii_char),c);
+    }
+}
