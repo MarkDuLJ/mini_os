@@ -1,18 +1,23 @@
 #![no_std]
 #![no_main]
-
 #![feature(custom_test_frameworks)]
-#![test_runner(crate::test_runner)]
-
+#![test_runner(mini_os::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 
-
-mod vga_buffer;
-mod serial;
-
 use core::panic::PanicInfo;
+use mini_os::println;
 
-use vga_buffer::WRITER;
+#[no_mangle]
+pub extern "C" fn _start() -> ! {
+    println!("Welcome to MINI_OS");
+
+    #[cfg(test)]
+    test_main();
+
+    loop {
+        
+    }
+}
 
 #[cfg(not(test))]
 #[panic_handler]
@@ -21,101 +26,9 @@ fn panic(info: &PanicInfo) -> ! {
     loop{}
 }
 
-// panic handler in test mode
+#[cfg(test)]
 #[panic_handler]
-#[cfg(test)]
-fn panic(info:&PanicInfo) -> ! {
-    serial_println!("[Failed]\n");
-    serial_println!("Erro info: {}\n", info);
-    exit_qemu(QemuExitCode::Failed);
-    loop {
-        
-    }
+fn panic(info: &PanicInfo) -> ! {
+    mini_os::test_panic_handler(info);
 }
 
-
-#[no_mangle]
-pub extern "C" fn _start() -> !{
-/*
-    let vga_buf = 0xb8000 as *mut u8;
-
-    for(i, &byte) in HELLO.iter().enumerate() {
-        unsafe {
-            *vga_buf.offset(i as isize * 2) = byte;
-            *vga_buf.offset(i as isize * 2 + 1) = 0xb;
-        }
-    }
- */
-
-// vga_buffer::WRITER.lock().write_string("Hello here");
-
-println!("Hello {}", "...");
-// panic!("here is a panic coming...");
-
-#[cfg(test)]
-test_main();
-
-    loop {}
-}
-
-#[cfg(test)]
-pub fn test_runner(tests: &[&dyn Testable]) {
-    serial_println!("Running {} tests",tests.len());
-    println!("Running {} tests...", tests.len());
-    for test in tests {
-        test.run();
-    }
-
-    println!("quiting system");
-    exit_qemu(QemuExitCode::Success);
-}
-
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[repr(u32)]
-pub enum QemuExitCode {
-    Success = 0x10,
-    Failed = 0x11,
-}
-
-pub fn exit_qemu(exit_code: QemuExitCode) {
-    use x86_64::instructions::port::Port;
-    unsafe {
-        let mut port = Port::new(0xf4);
-        port.write(exit_code as u32);
-    }
-}
-
-pub trait Testable {
-    fn run(&self) -> ();
-}
-
-// print general info to every test function
-impl <T> Testable for T 
-where T: Fn(),
-{
-    fn run(&self) 
-     {
-        serial_print!("{}...\t", core::any::type_name::<T>());
-        self();
-        serial_println!("[OK]");
-    }
-}
-
-#[test_case]
-fn demo_assertion() {
-    serial_print!("demo assertion using serial print marco");
-    print!("an assertion demo...");
-    assert_eq!(1,1);
-    // assert_eq!(1,2);
-    println!("[OK]");
-}
-
-#[test_case]
-fn test_println_simple() {
-    serial_print!("demo assertion using serial print marco");
-    println!("an assertion demo...");
-    assert_eq!(1,1);
- 
-    println!("[OK]");
-}
