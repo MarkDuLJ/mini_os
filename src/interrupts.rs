@@ -4,6 +4,7 @@ use lazy_static::lazy_static;
 use pic8259::ChainedPics;
 use spin;
 
+use crate::print;
 use crate::println;
 use crate::gdt;
 
@@ -20,11 +21,13 @@ lazy_static! {
     static ref IDT: InterruptDescriptorTable = {
         let mut idt = InterruptDescriptorTable::new();
         idt.breakpoint.set_handler_fn(breakpoint_handler);
-        idt.double_fault.set_handler_fn(double_fault_handler);
+        idt.double_fault.set_handler_fn(double_fault_handler);//set stack index instead
 
         unsafe {
             idt.double_fault.set_handler_fn(double_fault_handler).set_stack_index(gdt::DOUBLE_FAULT_IST_INDEX);
         }
+
+        idt[InterruptIndex::Timer.as_usize()].set_handler_fn(timer_interrupt_handler);        
         idt
     };
   
@@ -53,4 +56,24 @@ extern "x86-interrupt" fn double_fault_handler(
 ) -> !
 {
     panic!("EXCEPTION: Double Fault\n{:#?}", stack_frame);
+}
+
+#[derive(Debug, Copy, Clone)]
+#[repr(u8)]
+pub enum InterruptIndex {
+    Timer = PIC_1_OFFSET,
+}
+
+impl InterruptIndex {
+    fn as_u8(self) -> u8 {
+        self as u8
+    }
+
+    fn as_usize(self) -> usize {
+        usize::from(self.as_u8())
+    }
+}
+
+extern "x86-interrupt" fn timer_interrupt_handler( _stack_frame: InterruptStackFrame){
+    print!(".");
 }
