@@ -5,7 +5,7 @@
 #![reexport_test_harness_main = "test_main"]
 
 use core::panic::PanicInfo;
-use mini_os::{print, println};
+use mini_os::println;
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
@@ -29,16 +29,14 @@ pub extern "C" fn _start() -> ! {
 
     println!("It did not crash!");
 
-    loop {
-        print!("-");
-    }
+    mini_os::hlt_loop();
 }
 
 #[cfg(not(test))]
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
     println!("{}", info);
-    loop{}
+   mini_os::hlt_loop();
 }
 
 #[cfg(test)]
