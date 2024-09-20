@@ -13,6 +13,12 @@ pub extern "C" fn _start() -> ! {
 
     // init for interrupt
     mini_os::init();
+
+    // cause a page fault
+    let ptr = 0xdeadbeaf as *mut u8;
+    unsafe { *ptr = 43;}
+
+    
 /* 
     // invoke a breakpoint interruption
     x86_64::instructions::interrupts::int3();
