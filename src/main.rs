@@ -79,6 +79,7 @@ pub fn test_runner(tests: &[&dyn Fn()]) {
 fn try_assertion(){
     serial_print!("it's a demo test...");
     assert_eq!(2,2);
+    // loop{}
     serial_println!("[OK]");
 }
 
