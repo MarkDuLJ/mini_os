@@ -1,14 +1,15 @@
 use volatile::Volatile;
 use lazy_static::lazy_static;
+use spin::Mutex;
 
 lazy_static!{
-    pub static ref WRITER: Writer = Writer { 
+    pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer { 
         col_position: 0, 
         color_code: ColorCode::new(Color::Cyan, Color::Black), 
         buffer: unsafe {
             &mut *(0xb8000 as *mut Buffer)
         },
-    };
+    });
 }
 
 #[allow(dead_code)]
@@ -125,6 +126,7 @@ impl Writer {
     }
 }
 
+/* 
 pub fn print_sth () {
     let mut writer = Writer{
         col_position: 0,
@@ -140,3 +142,4 @@ pub fn print_sth () {
     writer.write_string("W^rld!");
     write!(writer, "the numbers are {} and {}", 33, 1.0/3.0).unwrap();
 }
+*/

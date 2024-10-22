@@ -1,6 +1,8 @@
 #![no_std]
 #![no_main]
 
+use core::fmt::Write;
+
 mod vga_buf;
 
 // use core::panic::PanicInfo;
@@ -20,7 +22,10 @@ pub extern "C" fn _start() -> ! {
     }
     */
 
-    vga_buf::print_sth();
+    vga_buf::WRITER.lock().write_str("Hi there").unwrap();
+    write!(vga_buf::WRITER.lock(), "some numbers here: {} {}", 33, 1.0/3.0).unwrap();
+    write!(vga_buf::WRITER.lock(), "if you miss a train i'm on, you will know that i am gone. you can hear the whistle blow  hundred miles away.")
+        .unwrap();
     loop {
         
     }
