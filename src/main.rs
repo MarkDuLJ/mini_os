@@ -46,10 +46,21 @@ pub extern "C" fn _start() -> ! {
     }
 }
 
-// #[cfg(not(test))] // no need after add customer test runner
+#[cfg(not(test))] // panic for regular mode
 #[panic_handler]
 fn panic(info: &core::panic::PanicInfo) -> !{
     println!("{}", info);
+    loop {
+        
+    }
+}
+
+#[cfg(test)] // panic handler in test mode
+#[panic_handler]
+fn panic(info: &core::panic::PanicInfo) -> !{
+    serial_println!("[Failed]\n");
+    serial_println!("{}\n", info);
+    exit_qemu(QemuExitCode::Failed);
     loop {
         
     }
