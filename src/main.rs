@@ -39,7 +39,7 @@ pub extern "C" fn _start() -> ! {
     println!("print to screen from marco {}", "made by myself");
     println!();
     println!();
-    panic!("panic happens here...");
+    // panic!("panic happens here...");
     loop {
         
     }
@@ -60,6 +60,7 @@ pub fn test_runner(tests: &[&dyn Fn()]) {
     for test in tests {
         test();
     }
+    exit_qemu(QemuExitCode::Success);
 }
 
 #[test_case]
@@ -67,4 +68,20 @@ fn try_assertion(){
     print!("it's a demo test...");
     assert_eq!(2,2);
     println!("[OK]");
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[repr(u32)]
+pub enum QemuExitCode {
+    Success = 0x10,
+    Failed = 0x11,
+}
+
+pub fn exit_qemu(exit_code: QemuExitCode) {
+    use x86_64::instructions::port::Port;
+
+    unsafe {
+        let mut port =  Port::new(0xf4);
+        port.write(exit_code as u32);
+    }
 }
