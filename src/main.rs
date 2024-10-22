@@ -9,6 +9,7 @@
 use core::fmt::Write;
 
 mod vga_buf;
+mod serial;
 
 // use core::panic::PanicInfo;
 
@@ -56,7 +57,7 @@ fn panic(info: &core::panic::PanicInfo) -> !{
 
 #[cfg(test)]
 pub fn test_runner(tests: &[&dyn Fn()]) {
-    println!("Running {} tests", tests.len());
+    serial_println!("Running {} tests", tests.len());
     for test in tests {
         test();
     }
@@ -65,9 +66,9 @@ pub fn test_runner(tests: &[&dyn Fn()]) {
 
 #[test_case]
 fn try_assertion(){
-    print!("it's a demo test...");
-    assert_eq!(2,2);
-    println!("[OK]");
+    serial_print!("it's a demo test...");
+    assert_eq!(2,3);
+    serial_println!("[OK]");
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
