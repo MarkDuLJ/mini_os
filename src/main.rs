@@ -7,7 +7,7 @@ mod vga_buf;
 
 // use core::panic::PanicInfo;
 
-static HELLO: &[u8] = b"Hello World!";
+// static HELLO: &[u8] = b"Hello World!";
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
@@ -30,6 +30,9 @@ pub extern "C" fn _start() -> ! {
     println!();
     println!();
     println!("print to screen from marco {}", "made by myself");
+    println!();
+    println!();
+    panic!("panic happens here...");
     loop {
         
     }
@@ -37,7 +40,8 @@ pub extern "C" fn _start() -> ! {
 
 #[cfg(not(test))]
 #[panic_handler]
-fn panic(_info: &core::panic::PanicInfo) -> !{
+fn panic(info: &core::panic::PanicInfo) -> !{
+    println!("{}", info);
     loop {
         
     }
