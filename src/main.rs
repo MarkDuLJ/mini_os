@@ -1,6 +1,11 @@
 #![no_std]
 #![no_main]
 
+#![feature(custom_test_frameworks)]
+#![test_runner(crate::test_runner)]
+
+#![reexport_test_harness_main = "test_main"] //redefine test entry point to test_main
+
 use core::fmt::Write;
 
 mod vga_buf;
@@ -11,6 +16,8 @@ mod vga_buf;
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {
+    #[cfg(test)]
+    test_main();
     /* 
     let vga_buf = 0xb8000 as *mut u8;
 
@@ -38,11 +45,26 @@ pub extern "C" fn _start() -> ! {
     }
 }
 
-#[cfg(not(test))]
+// #[cfg(not(test))] // no need after add customer test runner
 #[panic_handler]
 fn panic(info: &core::panic::PanicInfo) -> !{
     println!("{}", info);
     loop {
         
     }
+}
+
+#[cfg(test)]
+pub fn test_runner(tests: &[&dyn Fn()]) {
+    println!("Running {} tests", tests.len());
+    for test in tests {
+        test();
+    }
+}
+
+#[test_case]
+fn try_assertion(){
+    print!("it's a demo test...");
+    assert_eq!(2,2);
+    println!("[OK]");
 }
