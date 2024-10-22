@@ -26,6 +26,10 @@ pub extern "C" fn _start() -> ! {
     write!(vga_buf::WRITER.lock(), "some numbers here: {} {}", 33, 1.0/3.0).unwrap();
     write!(vga_buf::WRITER.lock(), "if you miss a train i'm on, you will know that i am gone. you can hear the whistle blow  hundred miles away.")
         .unwrap();
+
+    println!();
+    println!();
+    println!("print to screen from marco {}", "made by myself");
     loop {
         
     }
