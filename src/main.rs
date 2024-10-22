@@ -67,20 +67,20 @@ fn panic(info: &core::panic::PanicInfo) -> !{
 }
 
 #[cfg(test)]
-pub fn test_runner(tests: &[&dyn Fn()]) {
+pub fn test_runner(tests: &[&dyn Testable]) {
     serial_println!("Running {} tests", tests.len());
     for test in tests {
-        test();
+        test.run();
     }
     exit_qemu(QemuExitCode::Success);
 }
 
 #[test_case]
 fn try_assertion(){
-    serial_print!("it's a demo test...");
+    // serial_print!("it's a demo test...");
     assert_eq!(2,2);
     // loop{}
-    serial_println!("[OK]");
+    // serial_println!("[OK]");
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -96,5 +96,20 @@ pub fn exit_qemu(exit_code: QemuExitCode) {
     unsafe {
         let mut port =  Port::new(0xf4);
         port.write(exit_code as u32);
+    }
+}
+
+// traint for print message for every test
+pub trait Testable {
+    fn run(&self) -> ();
+}
+
+impl<T> Testable for T
+where T: Fn(),  
+{
+    fn run(&self) -> () {
+        serial_print!("{}...\t", core::any::type_name::<T>());
+        self();
+        serial_println!("[OK]");
     }
 }
