@@ -13,6 +13,11 @@ use mini_os::println;
 pub extern "C" fn _start() -> ! {
     println!("Operation System starting...");
 
+    mini_os::init();
+
+    // invoke a breakpoint exception
+    x86_64::instructions::interrupts::int3();
+
     #[cfg(test)]
     test_main();
 
@@ -40,6 +45,9 @@ pub extern "C" fn _start() -> ! {
     println!();
     // panic!("panic happens here...");
     */
+
+    println!("I'm still here, no crash...");//check if return after any exceptions
+
     loop {
         
     }

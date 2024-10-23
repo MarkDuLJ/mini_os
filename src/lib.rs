@@ -3,14 +3,20 @@
 #![feature(custom_test_frameworks)]
 #![test_runner(crate::test_runner)]
 #![reexport_test_harness_main = "test_main"]
+#![feature(abi_x86_interrupt)]
 
 
 pub mod vga_buf;
 pub mod serial;
+pub mod interrupts;
 
 use core::panic::PanicInfo;
 
-// traint for print message for every test
+pub fn init(){
+    interrupts::init_idt();
+}
+
+// trait for print message for every test
 pub trait Testable {
     fn run(&self) -> ();
 }
@@ -54,9 +60,7 @@ pub fn test_panic_handler(info: &PanicInfo) -> ! {
 fn panic(info: &PanicInfo) -> !{
     test_panic_handler(info);
  
-    loop {
-        
-    }
+
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
