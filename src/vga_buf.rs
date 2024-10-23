@@ -160,3 +160,36 @@ pub fn _print(args: fmt::Arguments) {
     use core::fmt::Write;
     WRITER.lock().write_fmt(args).unwrap();
 }
+
+#[test_case]
+fn test_println_output(){
+    let s = "something is good for you";
+    println!("{}", s);
+    for (i, c) in s.chars().enumerate() {
+        let screen_char = WRITER.lock().buffer.chars[BUFFER_HEIGHT - 2][i].read();
+        assert_eq!(char::from(screen_char.ascii_char), c);
+    }
+}
+
+
+
+#[test_case]
+fn try_assertion(){
+    // serial_print!("it's a demo test...");
+    assert_eq!(2,2);
+    // loop{}
+    // serial_println!("[OK]");
+}
+
+#[test_case]
+fn test_println(){
+    println!("test println marco");
+}
+
+#[test_case]
+fn test_println_many(){
+    for _ in 0..200 {
+
+        println!("test println marco");
+    }
+}
