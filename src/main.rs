@@ -15,8 +15,37 @@ pub extern "C" fn _start() -> ! {
 
     mini_os::init();
 
+    /* 
     // invoke a breakpoint exception
     x86_64::instructions::interrupts::int3();
+    */
+
+    /*   
+        try to write to a readonly address,triger a page fault,
+        w/o page fault handler, a double fault occurs.
+        IDT doesn't have double foualt handler,
+        cause triple fault that system reset endless.
+        by add double fault handler in IDT, avoid triple fault.
+        unsafe {
+            *(0xdeadbeef as *mut u8) = 43;
+        }
+    */
+
+    /*
+      kernal stack overflow
+      when touch guard page, page fault occurs, cpu looks up page fault handler
+      and try to push interrupt stack frame onto stack, but stack pointer still points to the guard page
+      it will cause 2nd page fault, which causes a double fault
+      with current double fault handler, still need to push the interrupt stack from, which still points to the guard page
+      this is 3rd page fault, which causes triple fault and system reboot.
+      Current double fault handler cant sovle this. Demo here.
+      That's the reason of using switching stack.
+    */
+
+    fn stack_overflow(){
+        stack_overflow();
+    }
+    stack_overflow();
 
     #[cfg(test)]
     test_main();
