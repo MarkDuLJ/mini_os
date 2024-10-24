@@ -77,6 +77,8 @@ pub extern "C" fn _start() -> ! {
 
     println!("I'm still here, no crash...");//check if return after any exceptions
 
+    mini_os::hlt_loop();
+
     loop {
         // call crate print to create a deadlock
         use mini_os::print; //call _print where has a WRITER lock inside
@@ -92,7 +94,7 @@ pub extern "C" fn _start() -> ! {
 #[panic_handler]
 fn panic(info: &PanicInfo) -> !{
     println!("{}", info);
-    loop{}
+    mini_os::hlt_loop();
 }
 
 #[cfg(test)]

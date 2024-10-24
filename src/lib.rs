@@ -13,6 +13,12 @@ pub mod gdt;
 
 use core::panic::PanicInfo;
 
+pub fn hlt_loop() -> ! { 
+    loop {
+        x86_64::instructions::hlt();
+    }
+}
+
 pub fn init(){
     gdt::init();
     interrupts::init_idt();
@@ -49,24 +55,20 @@ pub fn test_runner(tests: &[&dyn Testable]) {
 pub extern "C" fn _start() -> !{
     init(); // for cargo test --lib, init IDT before running test
     test_main();
-    loop {
-        
-    }
+    hlt_loop();
 }
 
 pub fn test_panic_handler(info: &PanicInfo) -> ! {
     serial_println!("[Failed]\n");
     serial_println!("Error: {}\n", info);
     exit_qemu(QemuExitCode::Failed);
-    loop {}
+    hlt_loop();
 }
 
 #[cfg(test)] // panic handler in test mode
 #[panic_handler]
 fn panic(info: &PanicInfo) -> !{
     test_panic_handler(info);
- 
-
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
