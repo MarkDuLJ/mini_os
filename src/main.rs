@@ -78,7 +78,10 @@ pub extern "C" fn _start() -> ! {
     println!("I'm still here, no crash...");//check if return after any exceptions
 
     loop {
-        
+        // call crate print to create a deadlock
+        use mini_os::print; //call _print where has a WRITER lock inside
+
+        print!("-"); //since lock is occupied here, time handler can't get the lock anymore
     }
 }
 
