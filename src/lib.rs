@@ -17,6 +17,8 @@ pub fn init(){
     gdt::init();
     interrupts::init_idt();
     unsafe { interrupts::PICS.lock().initialize()};//init pic
+
+    x86_64::instructions::interrupts::enable();
 }
 
 // trait for print message for every test
