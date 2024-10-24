@@ -81,6 +81,8 @@ pub extern "C" fn _start() -> ! {
         // call crate print to create a deadlock
         use mini_os::print; //call _print where has a WRITER lock inside
 
+        for _ in 0..100000{}  //add loop to slow down then show print lock and time interrupt work together
+
         print!("-"); //since lock is occupied here, time handler can't get the lock anymore
     }
 }
