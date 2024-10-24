@@ -40,12 +40,12 @@ pub extern "C" fn _start() -> ! {
       this is 3rd page fault, which causes triple fault and system reboot.
       Current double fault handler cant sovle this. Demo here.
       That's the reason of using switching stack.
-    */
-
-    fn stack_overflow(){
+      
+      fn stack_overflow(){
         stack_overflow();
     }
     stack_overflow();
+    */
 
     #[cfg(test)]
     test_main();
