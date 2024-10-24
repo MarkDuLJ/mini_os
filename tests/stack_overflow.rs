@@ -26,7 +26,7 @@ lazy_static!{
         unsafe {
             idt.double_fault
                 .set_handler_fn(test_double_fault_handler)
-                .set_stack_index(mini_os::gdt::DOUBLE_FAULT_IST_INDEX);
+                .set_stack_index(mini_os::gdt::DOUBLE_FAULT_IST_INDEX);//w/o this set, test will fail
         }
         idt
     };
