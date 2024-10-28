@@ -7,28 +7,36 @@
 
 use core::panic::PanicInfo;
 
+use bootloader::{BootInfo, entry_point};
 use mini_os::println;
 
+entry_point!(kernel_main); // add type check for bootinfo argument since _start is called outside from bootloader 
+
 #[no_mangle]
-pub extern "C" fn _start() -> ! {
+// pub extern "C" fn _start(boot_info: &'static BootInfo) -> ! {
+fn kernel_main(boot_info: &'static BootInfo) -> ! {
     println!("Operation System starting...");
 
     mini_os::init();
+    use x86_64::registers::control::Cr3;
+
+    let (level_4_page_table, _) = Cr3::read();
+    println!("Level 4 page table at: {:?}", level_4_page_table.start_address());
 
     /*
         PAGE FAULT
         assign a value read-only address
-     */
-    // let ptr = 0xdeadbeaf as *mut u8;
-    let ptr = 0x20422c as *mut u8; // a code page is read-only
-
-    unsafe {
-        let x = *ptr; //read successfully
-        println!("read got: {}",x);
-    }
-    println!("Read ok");
-    unsafe { *ptr = 99; }
-
+        // let ptr = 0xdeadbeaf as *mut u8;
+        let ptr = 0x20422c as *mut u8; // a code page is read-only
+        
+        unsafe {
+            let x = *ptr; //read successfully
+            println!("read got: {}",x);
+        }
+        println!("Read ok");
+        unsafe { *ptr = 99; }
+    */
+        
     /* 
     // invoke a breakpoint exception
     x86_64::instructions::interrupts::int3();
