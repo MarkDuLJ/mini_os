@@ -15,6 +15,20 @@ pub extern "C" fn _start() -> ! {
 
     mini_os::init();
 
+    /*
+        PAGE FAULT
+        assign a value read-only address
+     */
+    // let ptr = 0xdeadbeaf as *mut u8;
+    let ptr = 0x20422c as *mut u8; // a code page is read-only
+
+    unsafe {
+        let x = *ptr; //read successfully
+        println!("read got: {}",x);
+    }
+    println!("Read ok");
+    unsafe { *ptr = 99; }
+
     /* 
     // invoke a breakpoint exception
     x86_64::instructions::interrupts::int3();
@@ -79,6 +93,7 @@ pub extern "C" fn _start() -> ! {
 
     mini_os::hlt_loop();
 
+    /* 
     loop {
         // call crate print to create a deadlock
         use mini_os::print; //call _print where has a WRITER lock inside
@@ -87,6 +102,7 @@ pub extern "C" fn _start() -> ! {
 
         print!("-"); //since lock is occupied here, time handler can't get the lock anymore
     }
+    */
 }
 
 // panic funtion
