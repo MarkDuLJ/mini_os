@@ -1,4 +1,4 @@
-use x86_64::{ structures::paging::{frame, PageTable}, PhysAddr, VirtAddr};
+use x86_64::{ structures::paging::{ OffsetPageTable, PageTable}, PhysAddr, VirtAddr};
 
 /// Return a mut ref to the active level 4 table
 /// Only be called once to avoid multiple &mut references
@@ -60,4 +60,12 @@ fn translate_addr_inner(addr: VirtAddr, physical_memory_offset: VirtAddr) -> Opt
     }
 
     Some(frame.start_address() + u64::from(addr.page_offset()))
+}
+
+//instead write tanslate function by myself, use x86_64 crate OffsetPageTable
+
+/// Initialize a new OffsetPageTable
+pub unsafe fn init(physical_memory_offset: VirtAddr) -> OffsetPageTable<'static> {
+    let l4_table = active_lvl_4_table(physical_memory_offset);
+    OffsetPageTable::new(l4_table, physical_memory_offset)
 }

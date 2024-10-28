@@ -96,7 +96,7 @@ extern "x86-interrupt" fn keyboard_interrupt_handler(_stack_frame: InterruptStac
         }
     }
 
-    /**
+    /*
     
     // convert scancode(number) to keys
     let key = match scancode {

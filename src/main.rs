@@ -8,8 +8,8 @@
 use core::panic::PanicInfo;
 
 use bootloader::{BootInfo, entry_point};
-use mini_os::println;
-use x86_64::structures::paging::PageTable;
+use mini_os::{memory, println};
+use x86_64::{structures::paging::Translate, VirtAddr};
 
 entry_point!(kernel_main); // add type check for bootinfo argument since _start is called outside from bootloader 
 
@@ -19,6 +19,28 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     println!("Operation System starting...");
 
     mini_os::init();
+
+    
+    let phys_mem_offset = VirtAddr::new(boot_info.physical_memory_offset);
+
+    // using whole physical memory mapping
+    let addresses = [
+        0xb8000, //the identity mapped vga buffer page
+        0x201008, // some code page
+        0x0100_0020_1a10, // some stack page
+        boot_info.physical_memory_offset, //virtual address mapped to physical address 0
+    ];
+    let mapper = unsafe {
+        memory::init(phys_mem_offset) //init a mapper
+    };
+
+    for &address in &addresses {
+        let virt = VirtAddr::new(address);
+        let phys = mapper.translate_addr(virt);
+        println!("{:?} ---> {:?}", virt, phys);
+    }
+
+    /* 
     // use x86_64::registers::control::Cr3;
 
     use mini_os::memory::active_lvl_4_table;
@@ -54,15 +76,6 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
 
     use mini_os::memory::translate_addr;
 
-    let phys_mem_offset = VirtAddr::new(boot_info.physical_memory_offset);
-
-    // using whole physical memory mapping
-    let addresses = [
-        0xb8000, //the identity mapped vga buffer page
-        0x201008, // some code page
-        0x0100_0020_1a10, // some stack page
-        boot_info.physical_memory_offset, //virtual address mapped to physical address 0
-    ];
 
     for &address in &addresses {
         let virt = VirtAddr::new(address);
@@ -70,6 +83,7 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
 
         println!("{:?} ---> {:?}", virt, phys);
     }
+    */
 
     /* find level 4 page table address
     let (level_4_page_table, _) = Cr3::read();
