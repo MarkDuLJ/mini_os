@@ -9,7 +9,7 @@ use core::panic::PanicInfo;
 
 use bootloader::{BootInfo, entry_point};
 use mini_os::{memory, println};
-use x86_64::{structures::paging::Translate, VirtAddr};
+use x86_64::{structures::paging::{Page, Translate}, VirtAddr};
 
 entry_point!(kernel_main); // add type check for bootinfo argument since _start is called outside from bootloader 
 
@@ -19,10 +19,22 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     println!("Operation System starting...");
 
     mini_os::init();
-
     
     let phys_mem_offset = VirtAddr::new(boot_info.physical_memory_offset);
+    let mut mapper = unsafe {
+        memory::init(phys_mem_offset) //init a mapper
+    };
+    let mut frame_allocator = memory::EmptyFrameAllocator;
 
+    //map an unused page nullpointer 0
+    let page =  Page::containing_address(VirtAddr::new(0));
+    memory::create_vga_mapping(page, &mut mapper, &mut frame_allocator);
+
+    //write a string to screen through the new mapping
+    let page_ptr: *mut u64 = page.start_address().as_mut_ptr();
+    unsafe { page_ptr.offset(400).write_volatile(0x_f021_f077_f065_f04e)};//value="New!"
+
+      /* 
     // using whole physical memory mapping
     let addresses = [
         0xb8000, //the identity mapped vga buffer page
@@ -30,15 +42,13 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
         0x0100_0020_1a10, // some stack page
         boot_info.physical_memory_offset, //virtual address mapped to physical address 0
     ];
-    let mapper = unsafe {
-        memory::init(phys_mem_offset) //init a mapper
-    };
 
     for &address in &addresses {
         let virt = VirtAddr::new(address);
         let phys = mapper.translate_addr(virt);
         println!("{:?} ---> {:?}", virt, phys);
     }
+    */
 
     /* 
     // use x86_64::registers::control::Cr3;
