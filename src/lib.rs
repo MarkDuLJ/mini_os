@@ -10,6 +10,7 @@ pub mod vga_buf;
 pub mod serial;
 pub mod interrupts;
 pub mod gdt;
+pub mod memory;
 
 use core::panic::PanicInfo;
 
@@ -51,8 +52,15 @@ pub fn test_runner(tests: &[&dyn Testable]) {
 }
 
 #[cfg(test)]
+use bootloader::{entry_point, BootInfo};
+
+#[cfg(test)]
+entry_point!(test_kernal_main);
+
+#[cfg(test)]
 #[no_mangle]
-pub extern "C" fn _start() -> !{
+// pub extern "C" fn _start() -> !{
+fn test_kernal_main(_boot_info: &'static BootInfo) -> ! {
     init(); // for cargo test --lib, init IDT before running test
     test_main();
     hlt_loop();
