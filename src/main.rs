@@ -8,7 +8,7 @@
 use core::panic::PanicInfo;
 
 use bootloader::{BootInfo, entry_point};
-use mini_os::{memory, println};
+use mini_os::{memory::{self, BootInfoFrameAllocator}, println};
 use x86_64::{structures::paging::{Page, Translate}, VirtAddr};
 
 entry_point!(kernel_main); // add type check for bootinfo argument since _start is called outside from bootloader 
@@ -24,7 +24,10 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     let mut mapper = unsafe {
         memory::init(phys_mem_offset) //init a mapper
     };
-    let mut frame_allocator = memory::EmptyFrameAllocator;
+    // let mut frame_allocator = memory::EmptyFrameAllocator;//empty allocator
+    let mut frame_allocator =  unsafe {
+        BootInfoFrameAllocator::init(&boot_info.memory_map)
+    };
 
     //map an unused page nullpointer 0
     let page =  Page::containing_address(VirtAddr::new(0));
