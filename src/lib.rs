@@ -5,13 +5,14 @@
 #![reexport_test_harness_main = "test_main"]
 #![feature(abi_x86_interrupt)]
 
-extern crate alloc;
+extern crate alloc; //try to use heap allocation and data structures like Vec, Box w/o systems runtime
 
 pub mod vga_buf;
 pub mod serial;
 pub mod interrupts;
 pub mod gdt;
 pub mod memory;
+pub mod allocator;
 
 use core::panic::PanicInfo;
 
