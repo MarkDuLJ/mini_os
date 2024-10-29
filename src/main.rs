@@ -6,12 +6,12 @@
 
 extern crate alloc;
 
-use alloc::boxed::Box;
+use alloc::{boxed::Box, rc::Rc,vec, vec::Vec};
 
 use core::panic::PanicInfo;
 
 use bootloader::{BootInfo, entry_point};
-use mini_os::{memory::{self, BootInfoFrameAllocator}, println};
+use mini_os::{allocator, memory::{self, BootInfoFrameAllocator}, println};
 use x86_64::{structures::paging::{Page, Translate}, VirtAddr};
 
 entry_point!(kernel_main); // add type check for bootinfo argument since _start is called outside from bootloader 
@@ -22,19 +22,33 @@ fn kernel_main(boot_info: &'static BootInfo) -> ! {
     println!("Operation System starting...");
 
     mini_os::init();
-    let x = Box::new(11);
-    // println!("{:?}", x);
+
     
-    /* 
     let phys_mem_offset = VirtAddr::new(boot_info.physical_memory_offset);
     let mut mapper = unsafe {
         memory::init(phys_mem_offset) //init a mapper
-    };
+        };
     // let mut frame_allocator = memory::EmptyFrameAllocator;//empty allocator
     let mut frame_allocator =  unsafe {
         BootInfoFrameAllocator::init(&boot_info.memory_map)
-    };
+        };
 
+    allocator::init_heap(&mut mapper, &mut frame_allocator).expect("heap initialization failed");
+
+    let mut vec = Vec::new();
+    for i in 0..100 {
+        vec.push(i);
+    }
+
+    //create a ref counted vector -> will be freed when count reachs 0
+    let ref_counted =  Rc::new(vec![1,2,3]);
+    let cloned_ref = ref_counted.clone();
+    println!("current ref count is {}", Rc::strong_count(&cloned_ref));
+    core::mem::drop(ref_counted);
+    println!("ref count is {} now", Rc::strong_count(&cloned_ref));
+
+    println!("{:?}", vec);
+    /* 
     //map an unused page nullpointer 0
     let page =  Page::containing_address(VirtAddr::new(0));
     memory::create_vga_mapping(page, &mut mapper, &mut frame_allocator);
