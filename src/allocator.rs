@@ -5,9 +5,24 @@ use x86_64::{structures::paging::{
 };
 use core::ptr::null_mut;
 use linked_list_allocator::LockedHeap;
+use bump_allocator::BumpAllocator;
+
+pub mod bump_allocator;
+
+/**
+ * Allocator Design Goals
+ * 1, manage the available heap memory.
+ *      -return unused mem on alloc
+ *      -keep track of mem freed by dealloc
+ *      -never hand out mem that is already in use
+ * 2, effectively utilize the available memory and keep fragmentation low.
+ * 3, work well for concurrent apps and scale to any number processors.
+ * 4, optimize the mem layout to improve cache locality and avoid false sharing.
+ */
 
 #[global_allocator]
-static ALLOCATOR: LockedHeap = LockedHeap::empty();
+// static ALLOCATOR: LockedHeap = LockedHeap::empty(); // use crate dependency
+static ALLOCATOR: Lokced<BumpAllocator> = Lokced::new(BumpAllocator::new());
 
 pub struct Dummy;
 
@@ -59,4 +74,32 @@ pub fn init_heap(
     }
 
     Ok(())
+}
+
+
+// a wrapper aound spin::Mutex to permit trait implemntations
+// for the customer allocators
+pub struct Lokced<A> {
+    inner: spin::Mutex<A>,
+}
+
+impl <A> Lokced<A> {
+    pub const fn new(inner: A) -> Self {
+        Lokced{
+            inner: spin::Mutex::new(inner),
+        }
+    }
+
+    pub fn lock(&self) -> spin::MutexGuard<A> {
+        self.inner.lock()
+    }
+}
+
+fn align_up(addr: usize, align: usize) -> usize {
+    let remainder = addr % align;
+    if remainder == 0{
+        addr
+    } else {
+        addr - remainder + align
+    }
 }
